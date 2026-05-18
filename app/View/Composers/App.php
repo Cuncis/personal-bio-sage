@@ -22,4 +22,19 @@ class App extends Composer
     {
         return get_bloginfo('name', 'display');
     }
+
+    public function name(): string
+    {
+        return get_bloginfo('name', 'display');
+    }
+
+    public function currentPage(): string
+    {
+        return '';
+    }
+
+    public function pageTitle(): string
+    {
+        return wp_get_document_title();
+    }
 }
