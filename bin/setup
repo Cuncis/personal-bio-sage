@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ACORN_CACHE="$(cd "$ROOT/../.." && pwd)/cache"
+
+cd "$ROOT"
+
+echo "==> Installing PHP dependencies (composer install)"
+composer install --no-interaction
+
+echo "==> Installing Node dependencies and building assets"
+npm ci
+npm run build
+
+echo "==> Ensuring Acorn cache directories exist"
+mkdir -p \
+  "$ACORN_CACHE/acorn/framework/cache/data" \
+  "$ACORN_CACHE/acorn/framework/views" \
+  "$ACORN_CACHE/acorn/framework/sessions" \
+  "$ACORN_CACHE/acorn/logs"
+
+# Apache/php-fpm (www-data) must be able to write compiled views and manifests.
+chmod -R 777 "$ACORN_CACHE"
+
+if command -v wp >/dev/null 2>&1; then
+  echo "==> Warming Acorn cache (wp acorn optimize)"
+  wp acorn optimize --no-interaction 2>/dev/null || true
+fi
+
+echo ""
+echo "Setup complete. You can activate the theme in wp-admin."
+echo "If you still see a critical error, ensure wp-content/cache is writable by the web server:"
+echo "  sudo chown -R www-data:www-data $ACORN_CACHE"
