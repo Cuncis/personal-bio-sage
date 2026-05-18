@@ -6,8 +6,19 @@ ACORN_CACHE="$(cd "$ROOT/../.." && pwd)/cache"
 
 cd "$ROOT"
 
+PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
+PHP_MAJOR="$(php -r 'echo PHP_MAJOR_VERSION;')"
+PHP_MINOR="$(php -r 'echo PHP_MINOR_VERSION;')"
+
+if [ "$PHP_MAJOR" -lt 8 ] || { [ "$PHP_MAJOR" -eq 8 ] && [ "$PHP_MINOR" -lt 4 ]; }; then
+  echo "Error: PHP 8.4+ is required (found PHP ${PHP_VERSION})."
+  echo "  sudo update-alternatives --set php /usr/bin/php8.4"
+  exit 1
+fi
+
 echo "==> Installing PHP dependencies (composer install)"
 composer install --no-interaction
+composer dump-autoload --no-interaction
 
 echo "==> Installing Node dependencies and building assets"
 npm ci

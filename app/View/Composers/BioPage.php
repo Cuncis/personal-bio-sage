@@ -40,13 +40,15 @@ class BioPage extends Composer
             return $text;
         }
 
-        if (! in_the_loop()) {
+        $post = get_queried_object();
+
+        if (! $post instanceof \WP_Post || $post->post_type !== 'page') {
             return null;
         }
 
-        $content = get_the_content();
+        $content = $post->post_content;
 
-        if (! $content) {
+        if (! trim($content)) {
             return null;
         }
 
